@@ -8,6 +8,7 @@ type Product = {
   family: string;
   price: string;
   image: string;
+  position?: string;
   colors: string[];
   note: string;
 };
@@ -22,23 +23,29 @@ const navigation = [
 const edits = [
   {
     number: "01",
-    title: "Rose Garden",
-    subtitle: "Quiet colour, considered drape",
-    image: "/images/rose-garden.jpg",
+    title: "Ivory Column",
+    subtitle: "Pearled contrast, effortless form",
+    image: "/images/Hijabs/0081dc8a-1a8b-4aab-8073-ae084195cec5.JPG",
+    alt: "Black and ivory FLORA abaya with delicate pearl detailing",
+    position: "50% 48%",
     className: "edit-card--tall",
   },
   {
     number: "02",
-    title: "Everyday Silk",
-    subtitle: "Light catches every fold",
-    image: "/images/flora-collection.png",
+    title: "Silver Poise",
+    subtitle: "A quiet line of light",
+    image: "/images/Hijabs/1ce8381f-74ed-4417-8e4d-9e65d8fe65fc.JPG",
+    alt: "Flowing black FLORA abaya finished with silver accents",
+    position: "44% 50%",
     className: "edit-card--wide",
   },
   {
     number: "03",
-    title: "Soft Neutrals",
-    subtitle: "A study in warm restraint",
-    image: "/images/pearl-modal.jpg",
+    title: "Noir Lace",
+    subtitle: "Botanical lace, full movement",
+    image: "/images/Hijabs/1a9c68a6-e076-4af3-ac54-54d916e633e3.JPG",
+    alt: "Black FLORA abaya framed by floral lace",
+    position: "50% 68%",
     className: "edit-card--short",
   },
 ];
@@ -46,39 +53,43 @@ const edits = [
 const products: Product[] = [
   {
     id: 1,
-    name: "Jardin Chiffon",
-    family: "Signature drape",
-    price: "€34",
-    image: "/images/rose-garden.jpg",
-    colors: ["#d8a2a8", "#dccdbb", "#24211f"],
-    note: "Weightless, matte and gently textured.",
+    name: "Aurora Bloom Abaya",
+    family: "Art panel",
+    price: "Price on request",
+    image: "/images/Hijabs/0c470774-9318-47ab-ad6d-ea154cfed48f.JPG",
+    position: "50% 48%",
+    colors: ["#171413", "#4f8e8a", "#7398a6"],
+    note: "A clean black form transformed by an iridescent botanical panel.",
   },
   {
     id: 2,
-    name: "Pearl Modal",
-    family: "Everyday essential",
-    price: "€39",
-    image: "/images/pearl-modal.jpg",
-    colors: ["#e8dfd3", "#b5a898", "#8e6b67"],
-    note: "Breathable softness with an effortless fall.",
+    name: "Cocoa Bloom Abaya",
+    family: "Botanical edition",
+    price: "Price on request",
+    image: "/images/Hijabs/deada83b-d61a-47f6-8a35-3e068e0c916a.JPG",
+    position: "50% 50%",
+    colors: ["#171413", "#5d4237", "#bca698"],
+    note: "Warm cocoa contrast and oversized floral linework shape this open silhouette.",
   },
   {
     id: 3,
-    name: "Sienna Silk",
-    family: "Evening edit",
-    price: "€54",
-    image: "/images/sienna-silk.jpg",
-    colors: ["#b67b76", "#c4a783", "#efe9df"],
-    note: "A luminous finish, cut for graceful movement.",
+    name: "Silver Petal Abaya",
+    family: "Embellished edition",
+    price: "Price on request",
+    image: "/images/Hijabs/c24e15f5-5b2a-45e9-a8ac-2e5c9d8f334d.JPG",
+    position: "50% 57%",
+    colors: ["#171413", "#d5d0ca", "#8c8781"],
+    note: "Dimensional silver petals rise from the hem and return at the cuffs.",
   },
   {
     id: 4,
-    name: "Atelier Abaya",
-    family: "Limited silhouette",
-    price: "€189",
-    image: "/images/atelier-abaya.jpg",
-    colors: ["#d4c8ba", "#76706a", "#171514"],
-    note: "Fluid tailoring with a softly structured shoulder.",
+    name: "Silver Trace Abaya",
+    family: "Embroidered line",
+    price: "Price on request",
+    image: "/images/Hijabs/fcfc2c9e-0740-432b-86d8-f01fc5a42b89.JPG",
+    position: "52% 50%",
+    colors: ["#171413", "#d5d0ca", "#77726e"],
+    note: "A full-length black silhouette drawn through with delicate silver linework.",
   },
 ];
 
@@ -248,8 +259,9 @@ export default function Home() {
           <div className="hero-media__frame">
             <img
               className="hero-media__image"
-              src="/images/flora-hero.png"
-              alt="Woman in a blush hijab and flowing ivory dress"
+              src="/images/Hijabs/9ab14720-0822-4800-bcc8-8471c152dd96.JPG"
+              alt="Woman presenting a black FLORA abaya with gold patterned panels"
+              style={{ objectPosition: "50% 35%" }}
             />
           </div>
           <div className="cloth-ribbon cloth-ribbon--one" />
@@ -334,7 +346,12 @@ export default function Home() {
               style={{ "--reveal-delay": `${index * 100}ms` } as React.CSSProperties}
             >
               <div className="edit-card__image">
-                <img src={edit.image} alt="" loading="lazy" />
+                <img
+                  src={edit.image}
+                  alt={edit.alt}
+                  loading="lazy"
+                  style={{ objectPosition: edit.position }}
+                />
               </div>
               <div className="edit-card__meta">
                 <span>{edit.number}</span>
@@ -352,8 +369,8 @@ export default function Home() {
       <section className="tied-story" id="story">
         <div className="tied-story__visual" data-reveal>
           <img
-            src="/images/flora-collection.png"
-            alt="Two women in coordinated modest silhouettes"
+            src="/images/Hijabs/d119ab5c-8f71-42aa-91f3-f4ecfe7cf6f6.JPG"
+            alt="Black FLORA abaya with pearl embroidery photographed against golden architecture"
             loading="lazy"
           />
           <span className="image-stamp">FLORA / ATELIER NOTES</span>
@@ -366,8 +383,8 @@ export default function Home() {
             <em>a gesture.</em>
           </h2>
           <p className="tied-story__lead">
-            The FLORA signature starts with a single fold: clean near the face,
-            fluid through the shoulder, effortless for the rest of the day.
+            The FLORA signature begins with a clean line, then opens into
+            considered volume, hand-finished detail and effortless movement.
           </p>
           <ol>
             <li><span>01</span> Sketched for natural movement</li>
@@ -415,7 +432,12 @@ export default function Home() {
                 >
                   Quick view
                 </button>
-                <img src={product.image} alt={product.name} loading="lazy" />
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  loading="lazy"
+                  style={{ objectPosition: product.position }}
+                />
               </div>
               <div className="product-card__info">
                 <div>
@@ -513,9 +535,10 @@ export default function Home() {
           </div>
           <div className="craft-image" data-reveal>
             <img
-              src="/images/flora-collection.png"
-              alt="FLORA collection moving through a pale stone arcade"
+              src="/images/Hijabs/9edfb055-ee5f-4096-a5b1-1a118d3d0a4a.JPG"
+              alt="Close view of FLORA floral embroidery and flowing black fabric"
               loading="lazy"
+              style={{ objectPosition: "50% 60%" }}
             />
           </div>
           <div className="craft-stat" data-reveal>
@@ -685,7 +708,11 @@ export default function Home() {
           <div className="quick-modal__panel">
             <button className="quick-modal__close" type="button" onClick={() => setSelectedProduct(null)}>Close</button>
             <div className="quick-modal__image">
-              <img src={selectedProduct.image} alt={selectedProduct.name} />
+              <img
+                src={selectedProduct.image}
+                alt={selectedProduct.name}
+                style={{ objectPosition: selectedProduct.position }}
+              />
             </div>
             <div className="quick-modal__copy">
               <p className="eyebrow">{selectedProduct.family}</p>

@@ -40,6 +40,9 @@ test("server-renders the FLORA editorial homepage", async () => {
   assert.match(html, /A new language of modesty/);
   assert.match(html, /The new silhouettes/);
   assert.match(html, /Most loved/);
+  assert.match(html, /Ivory Column/);
+  assert.match(html, /Aurora Bloom Abaya/);
+  assert.match(html, /\/images\/Hijabs\/9ab14720-0822-4800-bcc8-8471c152dd96\.JPG/);
   assert.match(html, /Instagram · @flora\.hijab23/);
   assert.match(html, /WhatsApp · FLORA/);
   assert.match(html, /TikTok · @flora_hijab\.23/);
@@ -60,14 +63,19 @@ test("ships branded assets, interactions and accessible motion controls", async 
   await Promise.all([
     access(new URL("../public/images/flora-logo-full.png", import.meta.url)),
     access(new URL("../public/images/flora-logo-round.png", import.meta.url)),
-    access(new URL("../public/images/flora-hero.png", import.meta.url)),
-    access(new URL("../public/images/flora-collection.png", import.meta.url)),
+    access(new URL("../public/images/Hijabs/9ab14720-0822-4800-bcc8-8471c152dd96.JPG", import.meta.url)),
+    access(new URL("../public/images/Hijabs/d119ab5c-8f71-42aa-91f3-f4ecfe7cf6f6.JPG", import.meta.url)),
+    access(new URL("../public/images/Hijabs/0081dc8a-1a8b-4aab-8073-ae084195cec5.JPG", import.meta.url)),
+    access(new URL("../public/images/Hijabs/0c470774-9318-47ab-ad6d-ea154cfed48f.JPG", import.meta.url)),
+    access(new URL("../public/images/Hijabs/9edfb055-ee5f-4096-a5b1-1a118d3d0a4a.JPG", import.meta.url)),
     access(new URL("../public/og.png", import.meta.url)),
   ]);
 
   assert.match(page, /setMenuOpen/);
   assert.match(page, /setSelectedProduct/);
   assert.match(page, /submitNewsletter/);
+  assert.match(page, /\/images\/Hijabs\//);
+  assert.doesNotMatch(page, /\/images\/(?:flora-hero|flora-collection|rose-garden|pearl-modal|sienna-silk|atelier-abaya)/);
   assert.match(layout, /x-forwarded-host/);
   assert.match(layout, /summary_large_image/);
   assert.doesNotMatch(page, /announcement|Berlin|Germany/i);
