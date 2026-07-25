@@ -208,7 +208,6 @@ const socialLinks = [
 ];
 
 const staticCollectionImages: CollectionImage[] = [
-  "flora-ms0mf82k-3c6b8a73-ed45-4291-abed-3fa868e97185.png",
   "flora-ms0ma8xe-4ad3fa8a-d15c-4c34-9440-49d549232a99.jpg",
   "0081dc8a-1a8b-4aab-8073-ae084195cec5.JPG",
   "06f42d1f-7180-4fb6-92bc-8375e8c66013.JPG",
