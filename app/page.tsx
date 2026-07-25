@@ -973,9 +973,15 @@ export default function Home() {
         <div className="site-footer__bottom">
           <span>© 2026 FLORA Brand</span>
           <span>{t("Mazar-i-Shareef, Afghanistan", "مزار شریف، افغانستان")}</span>
-          <span className="footer-credit" dir="ltr">
+          <a
+            className="footer-credit"
+            href="https://www.linkedin.com/in/kawash-habibzada-790964158/"
+            target="_blank"
+            rel="noreferrer"
+            dir="ltr"
+          >
             Designed and developed by Mir Kawash Habibazada
-          </span>
+          </a>
           <a href="#top">{t("Back to top", "بازگشت به بالا")} ↑</a>
         </div>
       </footer>

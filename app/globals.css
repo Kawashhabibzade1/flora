@@ -1770,6 +1770,15 @@ em {
 .footer-credit {
   color: var(--ink-soft);
   justify-self: center;
+  text-decoration: underline;
+  text-decoration-color: rgba(23, 20, 19, 0.28);
+  text-underline-offset: 4px;
+  transition: color 0.3s, text-decoration-color 0.3s;
+}
+
+.footer-credit:hover {
+  color: var(--ink);
+  text-decoration-color: var(--rose);
 }
 
 .social-rail {

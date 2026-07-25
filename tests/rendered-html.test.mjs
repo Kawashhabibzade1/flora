@@ -59,6 +59,10 @@ test("server-renders the FLORA editorial homepage", async () => {
   assert.match(html, /https:\/\/www\.tiktok\.com\/@flora_hijab\.23/);
   assert.match(html, /Mazar-i-Shareef, Afghanistan/);
   assert.match(html, /Designed and developed by Mir Kawash Habibazada/);
+  assert.match(
+    html,
+    /https:\/\/www\.linkedin\.com\/in\/kawash-habibzada-790964158\//,
+  );
   assert.match(html, /https:\/\/flora\.example\/og\.png/);
   assert.doesNotMatch(html, /Berlin|Germany|Complimentary delivery/i);
   assert.doesNotMatch(html, /codex-preview|SkeletonPreview|react-loading-skeleton/);
