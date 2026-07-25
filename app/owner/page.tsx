@@ -51,6 +51,26 @@ function fileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function uploadFallbackMessage(status: number): string {
+  if (status === 401) {
+    return "Your owner session expired. Please sign in and try again.";
+  }
+
+  if (status === 413) {
+    return "The image is too large. Choose an image of 10 MB or less.";
+  }
+
+  if (status === 415) {
+    return "Choose a valid JPEG, PNG or WebP image.";
+  }
+
+  if (status >= 500) {
+    return `The upload service returned HTTP ${status}. Your image was not saved; please try again.`;
+  }
+
+  return "The image could not be uploaded. Please try again.";
+}
+
 async function readJson<T>(response: Response): Promise<T | null> {
   try {
     return (await response.json()) as T;
@@ -239,7 +259,7 @@ export default function OwnerPage() {
         setMessage("");
         setError(
           payload?.error?.message ??
-            "The image could not be uploaded. Please try again.",
+            uploadFallbackMessage(response.status),
         );
         return;
       }
@@ -376,7 +396,7 @@ export default function OwnerPage() {
                   {githubVerified === null
                     ? "GitHub checking"
                     : githubVerified
-                      ? "GitHub ready"
+                      ? "GitHub connected"
                       : "GitHub unavailable"}
                 </span>
               </div>

@@ -29,6 +29,7 @@ const navigation = [
   { label: "Hijabs", labelDr: "حجاب‌ها", href: "#hijabs" },
   { label: "Modest wear", labelDr: "پوشاک باوقار", href: "#wear" },
   { label: "Our story", labelDr: "داستان ما", href: "#story" },
+  { label: "Dashboard", labelDr: "داشبورد", href: "/owner" },
 ];
 
 const edits = [

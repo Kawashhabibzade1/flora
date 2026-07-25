@@ -1,3 +1,4 @@
+import { Buffer } from "node:buffer";
 import type { GitHubConfiguration } from "@/lib/owner-env";
 
 export const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
@@ -61,22 +62,12 @@ function hasExpectedMagicBytes(
   );
 }
 
-function bytesToBase64(bytes: Uint8Array): string {
-  const chunkSize = 32_768;
-  const chunks: string[] = [];
-
-  for (let offset = 0; offset < bytes.length; offset += chunkSize) {
-    const chunk = bytes.subarray(offset, offset + chunkSize);
-    let binary = "";
-
-    for (const byte of chunk) {
-      binary += String.fromCharCode(byte);
-    }
-
-    chunks.push(binary);
-  }
-
-  return btoa(chunks.join(""));
+export function bytesToBase64(bytes: Uint8Array): string {
+  return Buffer.from(
+    bytes.buffer,
+    bytes.byteOffset,
+    bytes.byteLength,
+  ).toString("base64");
 }
 
 function encodePath(path: string): string {
@@ -84,8 +75,12 @@ function encodePath(path: string): string {
 }
 
 function uploadFailureMessage(status: number): string {
-  if (status === 401 || status === 403) {
-    return "GitHub rejected the configured credentials or repository access.";
+  if (status === 401) {
+    return "The configured GitHub token is invalid or has expired.";
+  }
+
+  if (status === 403) {
+    return 'GitHub is connected, but this token cannot upload. Give it "Contents: Read and write" access to the flora repository.';
   }
 
   if (status === 404) {
@@ -166,7 +161,7 @@ export async function uploadImageToGitHub(
           content: bytesToBase64(bytes),
           message: `Add hijab image ${filename}`,
         }),
-        signal: AbortSignal.timeout(20_000),
+        signal: AbortSignal.timeout(90_000),
       },
     );
   } catch {

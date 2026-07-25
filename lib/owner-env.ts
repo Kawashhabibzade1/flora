@@ -15,6 +15,8 @@ export interface GitHubConfiguration {
   branch: string;
 }
 
+const MIN_OWNER_PASSWORD_LENGTH = 8;
+
 function readSecret(name: string): string | undefined {
   const value = process.env[name];
   return typeof value === "string" && value.length > 0 ? value : undefined;
@@ -31,7 +33,7 @@ export function getOwnerAuthConfiguration(): OwnerAuthConfiguration | null {
 
   if (
     !password ||
-    password.length < 16 ||
+    password.length < MIN_OWNER_PASSWORD_LENGTH ||
     !sessionSecret ||
     sessionSecret.length < 32
   ) {

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { access, readFile, readdir } from "node:fs/promises";
 import test from "node:test";
+import ts from "typescript";
 
 async function requestRoute(pathname = "/", init = {}) {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
@@ -51,6 +52,8 @@ test("server-renders the FLORA editorial homepage", async () => {
   assert.match(html, /43 images/);
   assert.match(html, />DR<\/button>/);
   assert.match(html, />EN<\/button>/);
+  assert.match(html, />Dashboard<\/a>/);
+  assert.match(html, /href="\/owner"/);
   assert.match(html, /social-rail--instagram/);
   assert.match(html, /social-rail--whatsapp/);
   assert.match(html, /social-rail--tiktok/);
@@ -116,11 +119,12 @@ test("ships branded assets, interactions and accessible motion controls", async 
 });
 
 test("ships a private owner portal and protected upload API", async () => {
-  const [ownerPage, ownerCss, ownerAuth, uploadRoute] = await Promise.all([
+  const [ownerPage, ownerCss, ownerAuth, uploadRoute, githubUpload] = await Promise.all([
     readFile(new URL("../app/owner/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/owner/owner.module.css", import.meta.url), "utf8"),
     readFile(new URL("../lib/owner-auth.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/owner/upload/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/github-image-upload.ts", import.meta.url), "utf8"),
   ]);
 
   assert.match(ownerPage, /Welcome back,/);
@@ -136,6 +140,29 @@ test("ships a private owner portal and protected upload API", async () => {
   assert.match(uploadRoute, /hasValidOwnerSession/);
   assert.match(uploadRoute, /MAX_IMAGE_BYTES/);
   assert.match(ownerPage, /github-status/);
+  assert.match(ownerPage, /GitHub connected/);
+  assert.match(githubUpload, /Buffer\.from\(/);
+  assert.match(githubUpload, /AbortSignal\.timeout\(90_000\)/);
+  assert.match(githubUpload, /Contents: Read and write/);
+  assert.doesNotMatch(githubUpload, /for \(const byte of chunk\)/);
+
+  const compiledUploader = ts.transpileModule(githubUpload, {
+    compilerOptions: {
+      module: ts.ModuleKind.ESNext,
+      target: ts.ScriptTarget.ES2022,
+    },
+  }).outputText;
+  const uploaderModule = await import(
+    `data:text/javascript;base64,${Buffer.from(compiledUploader).toString("base64")}`
+  );
+  const largeImageBytes = new Uint8Array(6 * 1024 * 1024);
+  largeImageBytes.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  const encodedLargeImage = uploaderModule.bytesToBase64(largeImageBytes);
+  assert.equal(Buffer.from(encodedLargeImage, "base64").byteLength, largeImageBytes.byteLength);
+  assert.deepEqual(
+    [...Buffer.from(encodedLargeImage, "base64").subarray(0, 8)],
+    [...largeImageBytes.subarray(0, 8)],
+  );
 
   const ownerResponse = await requestRoute("/owner");
   assert.equal(ownerResponse.status, 200);
@@ -180,7 +207,7 @@ test("ships a private owner portal and protected upload API", async () => {
   });
   assert.equal(unconfiguredLogin.status, 503);
 
-  process.env.OWNER_PASSWORD = "test-owner-password-with-entropy";
+  process.env.OWNER_PASSWORD = "test12345";
   process.env.OWNER_SESSION_SECRET =
     "test-session-secret-that-is-longer-than-thirty-two-characters";
 
@@ -193,7 +220,7 @@ test("ships a private owner portal and protected upload API", async () => {
         origin: "https://flora.example",
       },
       body: JSON.stringify({
-        password: "test-owner-password-with-entropy",
+        password: "test12345",
       }),
     });
     assert.equal(loginResponse.status, 200);
