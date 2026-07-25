@@ -119,13 +119,20 @@ test("ships branded assets, interactions and accessible motion controls", async 
 });
 
 test("ships a private owner portal and protected upload API", async () => {
-  const [ownerPage, ownerCss, ownerAuth, uploadRoute, githubUpload] = await Promise.all([
-    readFile(new URL("../app/owner/page.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/owner/owner.module.css", import.meta.url), "utf8"),
-    readFile(new URL("../lib/owner-auth.ts", import.meta.url), "utf8"),
-    readFile(new URL("../app/api/owner/upload/route.ts", import.meta.url), "utf8"),
-    readFile(new URL("../lib/github-image-upload.ts", import.meta.url), "utf8"),
-  ]);
+  const [ownerPage, ownerCss, ownerAuth, uploadRoute, githubUpload] =
+    await Promise.all([
+      readFile(new URL("../app/owner/page.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../app/owner/owner.module.css", import.meta.url), "utf8"),
+      readFile(new URL("../lib/owner-auth.ts", import.meta.url), "utf8"),
+      readFile(
+        new URL("../app/api/owner/upload/route.ts", import.meta.url),
+        "utf8",
+      ),
+      readFile(
+        new URL("../lib/github-image-upload.ts", import.meta.url),
+        "utf8",
+      ),
+    ]);
 
   assert.match(ownerPage, /Welcome back,/);
   assert.match(ownerPage, /Commit image to GitHub/);
@@ -153,12 +160,15 @@ test("ships a private owner portal and protected upload API", async () => {
     },
   }).outputText;
   const uploaderModule = await import(
-    `data:text/javascript;base64,${Buffer.from(compiledUploader).toString("base64")}`
+    `data:text/javascript;base64,${Buffer.from(compiledUploader).toString("base64")}`,
   );
   const largeImageBytes = new Uint8Array(6 * 1024 * 1024);
   largeImageBytes.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
   const encodedLargeImage = uploaderModule.bytesToBase64(largeImageBytes);
-  assert.equal(Buffer.from(encodedLargeImage, "base64").byteLength, largeImageBytes.byteLength);
+  assert.equal(
+    Buffer.from(encodedLargeImage, "base64").byteLength,
+    largeImageBytes.byteLength,
+  );
   assert.deepEqual(
     [...Buffer.from(encodedLargeImage, "base64").subarray(0, 8)],
     [...largeImageBytes.subarray(0, 8)],
