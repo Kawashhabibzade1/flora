@@ -3,7 +3,7 @@ import type { GitHubConfiguration } from "@/lib/owner-env";
 
 export const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 
-const DESTINATION_DIRECTORY = "public/images/Hijabs";
+export const GITHUB_COLLECTION_DIRECTORY = "public/images/Hijabs";
 
 const extensionByMimeType = {
   "image/jpeg": "jpg",
@@ -11,7 +11,7 @@ const extensionByMimeType = {
   "image/webp": "webp",
 } as const;
 
-type SupportedMimeType = keyof typeof extensionByMimeType;
+export type SupportedMimeType = keyof typeof extensionByMimeType;
 
 interface GitHubContentsResponse {
   content?: {
@@ -33,11 +33,13 @@ export class GitHubUploadError extends Error {
   }
 }
 
-function isSupportedMimeType(value: string): value is SupportedMimeType {
+export function isSupportedMimeType(
+  value: string,
+): value is SupportedMimeType {
   return Object.hasOwn(extensionByMimeType, value);
 }
 
-function hasExpectedMagicBytes(
+export function hasExpectedMagicBytes(
   bytes: Uint8Array,
   mimeType: SupportedMimeType,
 ): boolean {
@@ -140,7 +142,7 @@ export async function uploadImageToGitHub(
   sha: string;
 }> {
   const filename = `flora-${Date.now().toString(36)}-${crypto.randomUUID()}.${extension}`;
-  const path = `${DESTINATION_DIRECTORY}/${filename}`;
+  const path = `${GITHUB_COLLECTION_DIRECTORY}/${filename}`;
   const repository = `${encodeURIComponent(configuration.owner)}/${encodeURIComponent(configuration.repo)}`;
   let response: Response;
 

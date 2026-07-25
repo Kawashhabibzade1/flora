@@ -24,6 +24,20 @@ type Product = {
   noteDr: string;
 };
 
+type CollectionImage = {
+  filename: string;
+  number: string;
+  image: string;
+  remote?: boolean;
+};
+
+type CollectionManifest = {
+  images?: Array<{
+    filename?: unknown;
+    src?: unknown;
+  }>;
+};
+
 const navigation = [
   { label: "New in", labelDr: "تازه‌رسیده‌ها", href: "#new-in" },
   { label: "Hijabs", labelDr: "حجاب‌ها", href: "#hijabs" },
@@ -193,7 +207,9 @@ const socialLinks = [
   },
 ];
 
-const collectionImages = [
+const staticCollectionImages: CollectionImage[] = [
+  "flora-ms0mf82k-3c6b8a73-ed45-4291-abed-3fa868e97185.png",
+  "flora-ms0ma8xe-4ad3fa8a-d15c-4c34-9440-49d549232a99.jpg",
   "0081dc8a-1a8b-4aab-8073-ae084195cec5.JPG",
   "06f42d1f-7180-4fb6-92bc-8375e8c66013.JPG",
   "0c470774-9318-47ab-ad6d-ea154cfed48f.JPG",
@@ -251,14 +267,105 @@ export default function Home() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [activeFabric, setActiveFabric] = useState(0);
   const [newsletterMessage, setNewsletterMessage] = useState("");
+  const [collectionImages, setCollectionImages] = useState(
+    staticCollectionImages,
+  );
+  const [collectionStatus, setCollectionStatus] = useState<
+    "loading" | "ready" | "error"
+  >("loading");
+  const [collectionRefreshKey, setCollectionRefreshKey] = useState(0);
   const heroRef = useRef<HTMLElement>(null);
   const isDari = language === "dr";
   const t = (english: string, dari: string) => (isDari ? dari : english);
+  const collectionCount = isDari
+    ? collectionImages.length.toLocaleString("fa-AF")
+    : String(collectionImages.length);
 
   useEffect(() => {
     document.documentElement.lang = isDari ? "fa-AF" : "en";
     document.documentElement.dir = isDari ? "rtl" : "ltr";
   }, [isDari]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const refreshCollection = async () => {
+      setCollectionStatus("loading");
+
+      try {
+        const response = await fetch("/api/collection", {
+          cache: "no-store",
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error("Collection refresh failed.");
+        }
+
+        const payload = (await response.json()) as CollectionManifest;
+
+        if (!Array.isArray(payload.images)) {
+          throw new Error("Collection response is invalid.");
+        }
+
+        const staticNames = new Set(
+          staticCollectionImages.map((item) => item.filename.toLowerCase()),
+        );
+        const remoteNames = new Set<string>();
+        const newImages: CollectionImage[] = [];
+
+        for (const image of payload.images) {
+          if (
+            typeof image.filename !== "string" ||
+            typeof image.src !== "string" ||
+            staticNames.has(image.filename.toLowerCase()) ||
+            remoteNames.has(image.filename.toLowerCase())
+          ) {
+            continue;
+          }
+
+          const source = new URL(image.src, window.location.origin);
+
+          if (
+            source.origin !== window.location.origin ||
+            source.pathname !== "/api/collection/image"
+          ) {
+            continue;
+          }
+
+          remoteNames.add(image.filename.toLowerCase());
+          newImages.push({
+            filename: image.filename,
+            image: `${source.pathname}${source.search}`,
+            number: "",
+            remote: true,
+          });
+        }
+
+        if (controller.signal.aborted) return;
+
+        setCollectionImages(
+          [...newImages, ...staticCollectionImages].map((item, index) => ({
+            ...item,
+            number: String(index + 1).padStart(2, "0"),
+          })),
+        );
+        setCollectionStatus("ready");
+      } catch {
+        if (!controller.signal.aborted) {
+          setCollectionStatus("error");
+        }
+      }
+    };
+
+    void refreshCollection();
+    window.addEventListener("focus", refreshCollection);
+
+    return () => {
+      controller.abort();
+      window.removeEventListener("focus", refreshCollection);
+    };
+  }, [collectionRefreshKey]);
 
   useEffect(() => {
     const elements = document.querySelectorAll<HTMLElement>("[data-reveal]");
@@ -276,7 +383,7 @@ export default function Home() {
 
     elements.forEach((element) => observer.observe(element));
     return () => observer.disconnect();
-  }, []);
+  }, [collectionImages.length]);
 
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -668,9 +775,44 @@ export default function Home() {
         <header className="full-collection__heading section-shell" data-reveal>
           <div>
             <p className="eyebrow">
-              {t("Every FLORA piece · 43 images", "همهٔ مدل‌های FLORA · ۴۳ تصویر")}
+              {t(
+                `Every FLORA piece · ${collectionCount} images`,
+                `همهٔ مدل‌های FLORA · ${collectionCount} تصویر`,
+              )}
             </p>
             <h2>{t("The full collection", "مجموعهٔ کامل")}</h2>
+            <div
+              className="collection-refresh"
+              data-status={collectionStatus}
+              aria-live="polite"
+            >
+              {collectionStatus === "loading" && (
+                <span>
+                  {t(
+                    "Checking for new pieces…",
+                    "در حال بررسی مدل‌های تازه…",
+                  )}
+                </span>
+              )}
+              {collectionStatus === "error" && (
+                <>
+                  <span>
+                    {t(
+                      "New uploads could not be refreshed. Showing the saved collection.",
+                      "مدل‌های تازه بارگیری نشدند؛ مجموعهٔ ذخیره‌شده نمایش داده می‌شود.",
+                    )}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCollectionRefreshKey((current) => current + 1)
+                    }
+                  >
+                    {t("Try again", "تلاش دوباره")}
+                  </button>
+                </>
+              )}
+            </div>
           </div>
           <p>
             {t(
@@ -705,6 +847,18 @@ export default function Home() {
                   `مدل ${item.number} از مجموعهٔ FLORA`,
                 )}
                 loading="lazy"
+                onError={() => {
+                  if (!item.remote) return;
+
+                  setCollectionImages((current) =>
+                    current
+                      .filter((candidate) => candidate.filename !== item.filename)
+                      .map((candidate, itemIndex) => ({
+                        ...candidate,
+                        number: String(itemIndex + 1).padStart(2, "0"),
+                      })),
+                  );
+                }}
               />
               <span className="collection-tile__meta">
                 <i>FLORA · {item.number}</i>

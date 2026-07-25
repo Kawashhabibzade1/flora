@@ -49,7 +49,7 @@ test("server-renders the FLORA editorial homepage", async () => {
   assert.match(html, /Aurora Bloom Abaya/);
   assert.match(html, /\/images\/Hijabs\/9ab14720-0822-4800-bcc8-8471c152dd96\.JPG/);
   assert.match(html, /The full collection/);
-  assert.match(html, /43 images/);
+  assert.match(html, /45 images/);
   assert.match(html, />دری<\/button>/);
   assert.doesNotMatch(html, />DR<\/button>/);
   assert.match(html, />EN<\/button>/);
@@ -97,12 +97,19 @@ test("ships branded assets, interactions and accessible motion controls", async 
   assert.match(page, /submitNewsletter/);
   assert.match(page, /\/images\/Hijabs\//);
   assert.match(page, /collectionImages\.map/);
+  assert.match(page, /fetch\("\/api\/collection"/);
+  assert.match(page, /collectionImages\.length/);
+  assert.match(page, /new URL\(image\.src, window\.location\.origin\)/);
+  assert.match(page, /\[collectionImages\.length\]/);
   assert.match(page, /FaInstagram/);
   assert.match(page, /FaWhatsapp/);
   assert.match(page, /FaTiktok/);
   assert.doesNotMatch(page, /header-shop-link|Shop \/ Contact/);
-  assert.equal(hijabFiles.filter((file) => /\.jpe?g$/i.test(file)).length, 43);
-  for (const filename of hijabFiles.filter((file) => /\.jpe?g$/i.test(file))) {
+  const collectionFiles = hijabFiles.filter((file) =>
+    /\.(?:jpe?g|png|webp)$/i.test(file),
+  );
+  assert.equal(collectionFiles.length, 45);
+  for (const filename of collectionFiles) {
     assert.ok(page.includes(filename), `collection is missing ${filename}`);
   }
   assert.doesNotMatch(page, /\/images\/(?:flora-hero|flora-collection|rose-garden|pearl-modal|sienna-silk|atelier-abaya)/);
@@ -120,7 +127,17 @@ test("ships branded assets, interactions and accessible motion controls", async 
 });
 
 test("ships a private owner portal and protected upload API", async () => {
-  const [ownerPage, ownerCss, ownerAuth, uploadRoute, githubUpload] =
+  const [
+    ownerPage,
+    ownerCss,
+    ownerAuth,
+    uploadRoute,
+    githubUpload,
+    collectionRoute,
+    collectionImageRoute,
+    githubCollection,
+    runtimeCache,
+  ] =
     await Promise.all([
       readFile(new URL("../app/owner/page.tsx", import.meta.url), "utf8"),
       readFile(new URL("../app/owner/owner.module.css", import.meta.url), "utf8"),
@@ -133,12 +150,29 @@ test("ships a private owner portal and protected upload API", async () => {
         new URL("../lib/github-image-upload.ts", import.meta.url),
         "utf8",
       ),
+      readFile(
+        new URL("../app/api/collection/route.ts", import.meta.url),
+        "utf8",
+      ),
+      readFile(
+        new URL("../app/api/collection/image/route.ts", import.meta.url),
+        "utf8",
+      ),
+      readFile(
+        new URL("../lib/github-collection.ts", import.meta.url),
+        "utf8",
+      ),
+      readFile(
+        new URL("../lib/runtime-cache.ts", import.meta.url),
+        "utf8",
+      ),
     ]);
 
   assert.match(ownerPage, /Welcome back,/);
   assert.match(ownerPage, /Commit image to GitHub/);
   assert.match(ownerPage, /image\/jpeg,image\/png,image\/webp/);
-  assert.match(ownerPage, /website deployment/);
+  assert.match(ownerPage, /appears automatically in the live/);
+  assert.match(ownerPage, /no website deployment\s+is needed/);
   assert.match(ownerCss, /@keyframes draw-line/);
   assert.match(ownerCss, /prefers-reduced-motion:\s*reduce/);
   assert.match(ownerAuth, /HttpOnly/);
@@ -153,6 +187,21 @@ test("ships a private owner portal and protected upload API", async () => {
   assert.match(githubUpload, /AbortSignal\.timeout\(90_000\)/);
   assert.match(githubUpload, /Contents: Read and write/);
   assert.doesNotMatch(githubUpload, /for \(const byte of chunk\)/);
+  assert.match(collectionRoute, /listGitHubCollectionImages/);
+  assert.match(collectionRoute, /signGitHubCollectionImages/);
+  assert.match(collectionImageRoute, /hasValidCollectionImageSignature/);
+  assert.match(collectionImageRoute, /Cross-Origin-Resource-Policy/);
+  assert.match(collectionImageRoute, /max-age=31536000, immutable/);
+  assert.match(githubCollection, /\/git\/trees\//);
+  assert.match(githubCollection, /entry\.mode !== "100644"/);
+  assert.match(githubCollection, /entry\.type !== "blob"/);
+  assert.match(githubCollection, /crypto\.subtle\.sign/);
+  assert.match(githubCollection, /crypto\.subtle\.verify/);
+  assert.match(githubCollection, /redirect: "manual"/);
+  assert.match(githubCollection, /hasExpectedMagicBytes/);
+  assert.doesNotMatch(githubCollection, /download_url|html_url|Location/);
+  assert.match(runtimeCache, /cache\.match/);
+  assert.match(runtimeCache, /cache\.put/);
 
   const compiledUploader = ts.transpileModule(githubUpload, {
     compilerOptions: {
@@ -194,6 +243,38 @@ test("ships a private owner portal and protected upload API", async () => {
     authenticated: false,
     configured: { auth: false, github: false },
   });
+
+  const collectionResponse = await requestRoute("/api/collection", {
+    headers: { accept: "application/json" },
+  });
+  assert.equal(collectionResponse.status, 503);
+  assert.match(
+    collectionResponse.headers.get("cache-control") ?? "",
+    /no-store/i,
+  );
+  assert.deepEqual(await collectionResponse.json(), {
+    ok: false,
+    error: {
+      code: "COLLECTION_UNAVAILABLE",
+      message: "The live collection is temporarily unavailable.",
+    },
+  });
+
+  const traversalResponse = await requestRoute(
+    "/api/collection/image?filename=..%2Fsecret.jpg",
+    { headers: { accept: "image/*" } },
+  );
+  assert.equal(traversalResponse.status, 400);
+  assert.match(
+    traversalResponse.headers.get("cache-control") ?? "",
+    /no-store/i,
+  );
+
+  const duplicateFilenameResponse = await requestRoute(
+    "/api/collection/image?filename=photo.jpg&filename=other.jpg",
+    { headers: { accept: "image/*" } },
+  );
+  assert.equal(duplicateFilenameResponse.status, 400);
 
   const crossSiteLogin = await requestRoute("/api/owner/login", {
     method: "POST",

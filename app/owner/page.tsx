@@ -483,8 +483,9 @@ export default function OwnerPage() {
                   <div>
                     <strong>{uploaded.filename}</strong>
                     <p>
-                      Saved to GitHub. Publishing it in the live collection
-                      still requires a website deployment.
+                      Saved to GitHub. It appears automatically in the live
+                      collection within about a minute; no website deployment
+                      is needed.
                     </p>
                     <a
                       href={uploaded.githubUrl}

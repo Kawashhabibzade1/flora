@@ -937,6 +937,51 @@ em {
   margin: 2vw 0 0;
 }
 
+.collection-refresh {
+  align-items: center;
+  color: var(--ink-soft);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 9px;
+  gap: 10px 16px;
+  letter-spacing: 0.11em;
+  margin-top: 20px;
+  min-height: 18px;
+  text-transform: uppercase;
+}
+
+.collection-refresh[data-status="ready"] {
+  display: none;
+}
+
+.collection-refresh[data-status="loading"]::before {
+  animation: collection-pulse 1.4s ease-in-out infinite;
+  background: var(--rose);
+  border-radius: 50%;
+  content: "";
+  height: 6px;
+  width: 6px;
+}
+
+.collection-refresh button {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  letter-spacing: inherit;
+  padding: 0 0 3px;
+  text-transform: inherit;
+}
+
+@keyframes collection-pulse {
+  50% {
+    opacity: 0.25;
+    transform: scale(0.7);
+  }
+}
+
 .full-collection__heading > p {
   color: var(--ink-soft);
   font-family: var(--serif);
