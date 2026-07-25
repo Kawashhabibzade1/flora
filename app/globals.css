@@ -1757,12 +1757,19 @@ em {
 
 .site-footer__bottom {
   border-top: 1px solid var(--line);
-  display: flex;
+  align-items: start;
+  display: grid;
   font-size: 8px;
-  justify-content: space-between;
+  gap: 18px;
+  grid-template-columns: auto auto 1fr auto;
   letter-spacing: 0.12em;
   padding-top: 16px;
   text-transform: uppercase;
+}
+
+.footer-credit {
+  color: var(--ink-soft);
+  justify-self: center;
 }
 
 .social-rail {
@@ -2846,6 +2853,11 @@ em {
     align-items: flex-start;
     flex-direction: column;
     gap: 9px;
+    grid-template-columns: 1fr;
+  }
+
+  .footer-credit {
+    justify-self: start;
   }
 
   .social-rail {

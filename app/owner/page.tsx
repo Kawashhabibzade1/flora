@@ -64,6 +64,7 @@ export default function OwnerPage() {
   const [authenticated, setAuthenticated] = useState(false);
   const [configured, setConfigured] =
     useState<Configuration>(initialConfiguration);
+  const [githubVerified, setGithubVerified] = useState<boolean | null>(null);
   const [password, setPassword] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState("");
@@ -103,6 +104,31 @@ export default function OwnerPage() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!authenticated || !configured.github) {
+      return;
+    }
+
+    let active = true;
+
+    const verifyGitHub = async () => {
+      try {
+        const response = await fetch("/api/owner/github-status", {
+          cache: "no-store",
+          credentials: "same-origin",
+        });
+        if (active) setGithubVerified(response.ok);
+      } catch {
+        if (active) setGithubVerified(false);
+      }
+    };
+
+    void verifyGitHub();
+    return () => {
+      active = false;
+    };
+  }, [authenticated, configured.github]);
 
   useEffect(() => {
     return () => {
@@ -345,9 +371,13 @@ export default function OwnerPage() {
                   <i>{configured.auth ? <FaCheck /> : "!"}</i>
                   Owner access
                 </span>
-                <span data-ready={configured.github}>
-                  <i>{configured.github ? <FaCheck /> : "!"}</i>
-                  GitHub
+                <span data-ready={githubVerified === true}>
+                  <i>{githubVerified === true ? <FaCheck /> : "!"}</i>
+                  {githubVerified === null
+                    ? "GitHub checking"
+                    : githubVerified
+                      ? "GitHub ready"
+                      : "GitHub unavailable"}
                 </span>
               </div>
 
@@ -399,7 +429,10 @@ export default function OwnerPage() {
                   className={styles.primaryButton}
                   type="submit"
                   disabled={
-                    working || !selectedFile || !configured.github
+                    working ||
+                    !selectedFile ||
+                    !configured.github ||
+                    githubVerified !== true
                   }
                 >
                   <FaGithub aria-hidden="true" />
@@ -412,6 +445,13 @@ export default function OwnerPage() {
                 <p className={styles.configurationNote}>
                   GitHub is not connected yet. Add the repository and token as
                   protected hosting secrets before uploading.
+                </p>
+              )}
+
+              {configured.github && githubVerified === false && (
+                <p className={styles.configurationNote}>
+                  The repository, branch or GitHub token could not be verified.
+                  Replace the token before uploading.
                 </p>
               )}
 

@@ -58,6 +58,7 @@ test("server-renders the FLORA editorial homepage", async () => {
   assert.match(html, /https:\/\/whatsapp\.com\/channel\/0029VbCgrZb5PO15pQJGrB1X/);
   assert.match(html, /https:\/\/www\.tiktok\.com\/@flora_hijab\.23/);
   assert.match(html, /Mazar-i-Shareef, Afghanistan/);
+  assert.match(html, /Designed and developed by Mir Kawash Habibazada/);
   assert.match(html, /https:\/\/flora\.example\/og\.png/);
   assert.doesNotMatch(html, /Berlin|Germany|Complimentary delivery/i);
   assert.doesNotMatch(html, /codex-preview|SkeletonPreview|react-loading-skeleton/);
@@ -130,6 +131,7 @@ test("ships a private owner portal and protected upload API", async () => {
   assert.match(ownerAuth, /crypto\.subtle/);
   assert.match(uploadRoute, /hasValidOwnerSession/);
   assert.match(uploadRoute, /MAX_IMAGE_BYTES/);
+  assert.match(ownerPage, /github-status/);
 
   const ownerResponse = await requestRoute("/owner");
   assert.equal(ownerResponse.status, 200);
