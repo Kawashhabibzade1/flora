@@ -29,7 +29,8 @@ export async function generateMetadata(): Promise<Metadata> {
       "hijab",
       "modest fashion",
       "women's fashion",
-      "Berlin",
+      "Mazar-i-Shareef",
+      "Afghanistan",
       "FLORA Brand",
     ],
     icons: {
@@ -56,7 +57,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title: "FLORA — Poise, in every fold.",
       description:
-        "Considered hijabs and modern modest wear, designed in Berlin.",
+        "Considered hijabs and modern modest wear from Mazar-i-Shareef.",
       images: [socialImage],
     },
   };

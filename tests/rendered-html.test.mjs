@@ -43,7 +43,9 @@ test("server-renders the FLORA editorial homepage", async () => {
   assert.match(html, /Instagram · @flora\.hijab23/);
   assert.match(html, /WhatsApp · FLORA/);
   assert.match(html, /TikTok · @flora_hijab\.23/);
+  assert.match(html, /Mazar-i-Shareef, Afghanistan/);
   assert.match(html, /https:\/\/flora\.example\/og\.png/);
+  assert.doesNotMatch(html, /Berlin|Germany|Complimentary delivery/i);
   assert.doesNotMatch(html, /codex-preview|SkeletonPreview|react-loading-skeleton/);
 });
 
@@ -68,7 +70,10 @@ test("ships branded assets, interactions and accessible motion controls", async 
   assert.match(page, /submitNewsletter/);
   assert.match(layout, /x-forwarded-host/);
   assert.match(layout, /summary_large_image/);
+  assert.doesNotMatch(page, /announcement|Berlin|Germany/i);
+  assert.doesNotMatch(layout, /Berlin|Germany/i);
   assert.match(css, /prefers-reduced-motion:\s*reduce/);
   assert.match(css, /@keyframes cinematic-drift/);
+  assert.doesNotMatch(css, /\.announcement/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
 });

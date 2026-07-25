@@ -170,12 +170,7 @@ export default function Home() {
       <div className="intro-curtain" aria-hidden="true">
         <div className="intro-curtain__panel intro-curtain__panel--left" />
         <div className="intro-curtain__panel intro-curtain__panel--right" />
-        <p>FLORA · BERLIN</p>
-      </div>
-
-      <div className="announcement">
-        <p>Complimentary delivery across Germany on orders over €90</p>
-        <span>Private fittings · Berlin</span>
+        <p>FLORA · MAZAR-I-SHAREEF</p>
       </div>
 
       <header className="site-header">
@@ -267,7 +262,7 @@ export default function Home() {
 
         <div className="hero-issue">
           <span>No. 01</span>
-          <p>Designed in Berlin<br />for a life in motion</p>
+          <p>Designed in Mazar-i-Shareef<br />for a life in motion</p>
         </div>
         <a className="scroll-cue" href="#manifesto" aria-label="Scroll to story">
           <span />
@@ -628,7 +623,7 @@ export default function Home() {
         <div className="site-footer__wordmark" aria-hidden="true">FLORA</div>
         <div className="site-footer__bottom">
           <span>© 2026 FLORA Brand</span>
-          <span>Berlin, Germany</span>
+          <span>Mazar-i-Shareef, Afghanistan</span>
           <a href="#top">Back to top ↑</a>
         </div>
       </footer>
@@ -645,7 +640,7 @@ export default function Home() {
           ))}
         </nav>
         <div>
-          <p>FLORA / BERLIN</p>
+          <p>FLORA / MAZAR-I-SHAREEF</p>
           <div className="mobile-social">
             <a
               href="https://www.instagram.com/flora.hijab23?igsh=MTRucm1iZWRseG1lcA%3D%3D"
