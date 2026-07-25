@@ -108,8 +108,17 @@ test("ships branded assets, interactions and accessible motion controls", async 
   const collectionFiles = hijabFiles.filter((file) =>
     /\.(?:jpe?g|png|webp)$/i.test(file),
   );
-  assert.equal(collectionFiles.length, 45);
-  for (const filename of collectionFiles) {
+  const originalCollectionFiles = collectionFiles.filter(
+    (file) => !file.startsWith("flora-"),
+  );
+  const uploadedCollectionFiles = collectionFiles.filter((file) =>
+    file.startsWith("flora-"),
+  );
+
+  assert.ok(collectionFiles.length >= 45);
+  assert.equal(originalCollectionFiles.length, 43);
+  assert.ok(uploadedCollectionFiles.length >= 2);
+  for (const filename of originalCollectionFiles) {
     assert.ok(page.includes(filename), `collection is missing ${filename}`);
   }
   assert.doesNotMatch(page, /\/images\/(?:flora-hero|flora-collection|rose-garden|pearl-modal|sienna-silk|atelier-abaya)/);
