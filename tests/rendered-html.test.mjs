@@ -50,7 +50,8 @@ test("server-renders the FLORA editorial homepage", async () => {
   assert.match(html, /\/images\/Hijabs\/9ab14720-0822-4800-bcc8-8471c152dd96\.JPG/);
   assert.match(html, /The full collection/);
   assert.match(html, /43 images/);
-  assert.match(html, />DR<\/button>/);
+  assert.match(html, />دری<\/button>/);
+  assert.doesNotMatch(html, />DR<\/button>/);
   assert.match(html, />EN<\/button>/);
   assert.match(html, />Dashboard<\/a>/);
   assert.match(html, /href="\/owner"/);

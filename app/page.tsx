@@ -394,7 +394,7 @@ export default function Home() {
               aria-pressed={isDari}
               onClick={() => setLanguage("dr")}
             >
-              DR
+              دری
             </button>
             <span aria-hidden="true">/</span>
             <button
@@ -1036,7 +1036,7 @@ export default function Home() {
                 aria-pressed={isDari}
                 onClick={() => setLanguage("dr")}
               >
-                DR
+                دری
               </button>
               <span>/</span>
               <button
