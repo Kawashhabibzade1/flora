@@ -1,8 +1,7 @@
-# vinext-starter
+# FLORA — Hijab & Women’s Fashion
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+FLORA’s animated editorial storefront and private owner image-upload portal,
+running on [vinext](https://github.com/cloudflare/vinext).
 
 ## Prerequisites
 
@@ -17,6 +16,28 @@ npm run build
 ```
 
 This starter does not use `wrangler.jsonc`.
+
+## Owner image uploads
+
+The private owner portal is available at `/owner`. It signs the owner into an
+eight-hour, HttpOnly session and validates JPEG, PNG, or WebP files up to 10 MB
+before committing them to `public/images/Hijabs` through GitHub’s Contents API.
+
+Copy `.env.example` to `.env.local` for local development. Configure the same
+keys as production runtime variables in Sites:
+
+- `OWNER_PASSWORD`: use a long, randomly generated password
+- `OWNER_SESSION_SECRET`: use at least 32 random characters
+- `GITHUB_TOKEN`: fine-grained GitHub token limited to one repository with
+  `Contents: write`
+- `GITHUB_OWNER`, `GITHUB_REPO`, and optional `GITHUB_BRANCH`
+
+Keep the password, session secret, and token secret. Do not use a
+`NEXT_PUBLIC_` prefix.
+
+An upload creates a GitHub commit; it does not deploy the current Sites project.
+Publish a new site version before a newly committed image can appear in the live
+collection.
 
 ## Included Shape
 

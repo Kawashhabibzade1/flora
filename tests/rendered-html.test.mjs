@@ -2,20 +2,20 @@ import assert from "node:assert/strict";
 import { access, readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
-async function render() {
+async function requestRoute(pathname = "/", init = {}) {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);
+  const headers = {
+    accept: "text/html",
+    host: "flora.example",
+    "x-forwarded-host": "flora.example",
+    "x-forwarded-proto": "https",
+    ...(init.headers ?? {}),
+  };
 
   return worker.fetch(
-    new Request("http://localhost/", {
-      headers: {
-        accept: "text/html",
-        host: "flora.example",
-        "x-forwarded-host": "flora.example",
-        "x-forwarded-proto": "https",
-      },
-    }),
+    new Request(`https://flora.example${pathname}`, { ...init, headers }),
     {
       ASSETS: {
         fetch: async () => new Response("Not found", { status: 404 }),
@@ -26,6 +26,10 @@ async function render() {
       passThroughOnException() {},
     },
   );
+}
+
+async function render() {
+  return requestRoute("/");
 }
 
 test("server-renders the FLORA editorial homepage", async () => {
@@ -104,4 +108,115 @@ test("ships branded assets, interactions and accessible motion controls", async 
   assert.match(css, /\.social-rail/);
   assert.doesNotMatch(css, /\.announcement/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
+});
+
+test("ships a private owner portal and protected upload API", async () => {
+  const [ownerPage, ownerCss, ownerAuth, uploadRoute] = await Promise.all([
+    readFile(new URL("../app/owner/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/owner/owner.module.css", import.meta.url), "utf8"),
+    readFile(new URL("../lib/owner-auth.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/owner/upload/route.ts", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(ownerPage, /Welcome back,/);
+  assert.match(ownerPage, /Commit image to GitHub/);
+  assert.match(ownerPage, /image\/jpeg,image\/png,image\/webp/);
+  assert.match(ownerPage, /website deployment/);
+  assert.match(ownerCss, /@keyframes draw-line/);
+  assert.match(ownerCss, /prefers-reduced-motion:\s*reduce/);
+  assert.match(ownerAuth, /HttpOnly/);
+  assert.match(ownerAuth, /Secure/);
+  assert.match(ownerAuth, /SameSite=Strict/);
+  assert.match(ownerAuth, /crypto\.subtle/);
+  assert.match(uploadRoute, /hasValidOwnerSession/);
+  assert.match(uploadRoute, /MAX_IMAGE_BYTES/);
+
+  const ownerResponse = await requestRoute("/owner");
+  assert.equal(ownerResponse.status, 200);
+  const ownerHtml = await ownerResponse.text();
+  assert.match(ownerHtml, /<title>Private Atelier \| FLORA<\/title>/i);
+  assert.match(ownerHtml, /Opening the private atelier/);
+  assert.match(ownerHtml, /noindex/);
+
+  const sessionResponse = await requestRoute("/api/owner/session", {
+    headers: { accept: "application/json" },
+  });
+  assert.equal(sessionResponse.status, 200);
+  assert.match(
+    sessionResponse.headers.get("cache-control") ?? "",
+    /no-store/i,
+  );
+  assert.deepEqual(await sessionResponse.json(), {
+    authenticated: false,
+    configured: { auth: false, github: false },
+  });
+
+  const crossSiteLogin = await requestRoute("/api/owner/login", {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "content-type": "application/json",
+      origin: "https://attacker.example",
+      "sec-fetch-site": "cross-site",
+    },
+    body: JSON.stringify({ password: "not-a-real-password" }),
+  });
+  assert.equal(crossSiteLogin.status, 403);
+
+  const unconfiguredLogin = await requestRoute("/api/owner/login", {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "content-type": "application/json",
+      origin: "https://flora.example",
+    },
+    body: JSON.stringify({ password: "not-a-real-password" }),
+  });
+  assert.equal(unconfiguredLogin.status, 503);
+
+  process.env.OWNER_PASSWORD = "test-owner-password-with-entropy";
+  process.env.OWNER_SESSION_SECRET =
+    "test-session-secret-that-is-longer-than-thirty-two-characters";
+
+  try {
+    const loginResponse = await requestRoute("/api/owner/login", {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+        origin: "https://flora.example",
+      },
+      body: JSON.stringify({
+        password: "test-owner-password-with-entropy",
+      }),
+    });
+    assert.equal(loginResponse.status, 200);
+    const cookie = loginResponse.headers.get("set-cookie") ?? "";
+    assert.match(cookie, /flora_owner_session=/);
+    assert.match(cookie, /HttpOnly/i);
+    assert.match(cookie, /Secure/i);
+    assert.match(cookie, /SameSite=Strict/i);
+
+    const authenticatedSession = await requestRoute("/api/owner/session", {
+      headers: {
+        accept: "application/json",
+        cookie: cookie.split(";")[0],
+      },
+    });
+    assert.equal(authenticatedSession.status, 200);
+    assert.equal((await authenticatedSession.json()).authenticated, true);
+
+    const uploadWithoutCookie = await requestRoute("/api/owner/upload", {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        origin: "https://flora.example",
+      },
+      body: new FormData(),
+    });
+    assert.equal(uploadWithoutCookie.status, 401);
+  } finally {
+    delete process.env.OWNER_PASSWORD;
+    delete process.env.OWNER_SESSION_SECRET;
+  }
 });
