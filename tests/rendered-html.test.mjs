@@ -202,6 +202,7 @@ test("ships a private owner portal and protected upload API", async () => {
   assert.doesNotMatch(githubCollection, /download_url|html_url|Location/);
   assert.match(runtimeCache, /cache\.match/);
   assert.match(runtimeCache, /cache\.put/);
+  assert.match(runtimeCache, /headers: new Headers\(cached\.headers\)/);
 
   const compiledUploader = ts.transpileModule(githubUpload, {
     compilerOptions: {

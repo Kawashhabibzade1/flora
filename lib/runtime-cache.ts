@@ -20,7 +20,15 @@ export async function matchRuntimeCache(
   if (!cache) return null;
 
   try {
-    return (await cache.match(request)) ?? null;
+    const cached = await cache.match(request);
+
+    if (!cached) return null;
+
+    return new Response(cached.body, {
+      status: cached.status,
+      statusText: cached.statusText,
+      headers: new Headers(cached.headers),
+    });
   } catch {
     return null;
   }
